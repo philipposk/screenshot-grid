@@ -1,27 +1,59 @@
-# App Screenshot Gallery
+# screenshot-grid
 
-Click any screenshot to open the full-size image.
-
-<table>
-  <tr>
-    <td align="center" valign="top"><a href="shots/greenpert.png"><img src="shots/greenpert.png" alt="GreenPert" width="380"></a><br><sub><b>GreenPert</b> — <a href="http://greenpert.6x7.gr">http://greenpert.6x7.gr</a></sub></td>
-  </tr>
-</table>
-
----
-
-## How this works (reusable tool)
-
-This repo screenshots a list of web apps and builds the grid above. No API keys, no cost.
+Screenshot a list of web apps and build a **clickable 3×N grid** for any GitHub README. No API keys, no cost — pure [Playwright](https://playwright.dev) headless browser.
 
 ```bash
 npm install
-npx playwright install chromium   # one-time browser download
-npm run build                      # screenshot every app + rebuild this README
+npx playwright install chromium   # one-time, ~120 MB
+npm run build                      # screenshot all apps + generate README
 ```
 
-- Add apps in [`apps.json`](apps.json): `{ "name": "...", "url": "https://..." }`
-- `npm run shots` — screenshot only (`node capture.mjs greenpert` for one app)
-- `npm run grid` — rebuild README from existing screenshots (`COLS=4` to change columns)
+## Usage
 
-Screenshots live in [`shots/`](shots/) at 1440×900, retina (2x).
+**1. Edit `apps.json`** — one entry per app:
+
+```json
+{
+  "apps": [
+    { "name": "My App",   "url": "https://myapp.com" },
+    { "name": "Other",    "url": "https://other.io",  "dismiss": ["Accept cookies"] }
+  ]
+}
+```
+
+`dismiss` is optional — list button text or CSS selectors to click before snapping (age gates, cookie banners).
+
+**2. Run:**
+
+| Command | Does |
+|---------|------|
+| `npm run build` | Screenshot all apps + rebuild README |
+| `npm run shots` | Screenshot only |
+| `npm run grid`  | Rebuild README from existing shots |
+| `node capture.mjs myapp` | Screenshot one app by name |
+| `COLS=4 npm run grid` | Change grid columns (default 3) |
+
+**3. Paste the generated `README.md` grid** wherever you want it.
+
+## Reuse in another project
+
+Point the tool at your project's directory with env vars:
+
+```bash
+APPS_FILE=./myproject/docs/screenshots/apps.json \
+SHOTS_DIR=./myproject/docs/screenshots \
+node capture.mjs
+```
+
+Then run `build-readme.mjs` with the same vars to write the grid into a file you include.
+
+## Features
+
+- **Auto-fallback http↔https** — if HTTPS handshake fails, retries over HTTP
+- **Dismiss popups** before snapping (age gates, cookie banners, GDPR dialogs)
+- **Retina-quality** — 1440×900 viewport at 2× device pixel ratio
+- Reproducible: same `apps.json` → same grid
+
+## Requirements
+
+Node ≥ 18, `npm`, internet access to the target URLs.

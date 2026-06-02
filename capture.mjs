@@ -8,11 +8,13 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = dirname(fileURLToPath(import.meta.url));
-const { apps } = JSON.parse(readFileSync(join(root, "apps.json"), "utf8"));
+// APPS_FILE / SHOTS_DIR env vars let you reuse this against any project.
+const appsFile = process.env.APPS_FILE || join(root, "apps.json");
+const { apps } = JSON.parse(readFileSync(appsFile, "utf8"));
 const filter = process.argv[2]?.toLowerCase();
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const shotsDir = join(root, "shots");
+const shotsDir = process.env.SHOTS_DIR || join(root, "shots");
 mkdirSync(shotsDir, { recursive: true });
 
 // Viewport = the "hero" view most people screenshot a site at.
