@@ -3,3 +3,12 @@ node_modules/
 *.key
 secrets*
 shots/
+
+# scraper
+*.jsonl
+strains_*.json
+strains_*.csv
+/tmp/
+strain_scraper/.scrapy/
+__pycache__/
+*.pyc
