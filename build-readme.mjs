@@ -8,15 +8,25 @@ import { dirname, join } from "node:path";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const { apps } = JSON.parse(readFileSync(join(root, "apps.json"), "utf8"));
-const COLS = Number(process.env.COLS) || 3;
-const CELL_W = 380; // px width of each thumbnail in the grid
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-// Keep only apps whose screenshot actually exists.
 const shots = apps
   .map((a) => ({ ...a, img: `shots/${slug(a.name)}.png` }))
   .filter((a) => existsSync(join(root, a.img)));
+
+// Auto-pick columns based on screenshot count so the grid stays dense.
+// A manual COLS env override always wins.
+function autoCols(n) {
+  if (n <= 2) return n;
+  if (n <= 4) return 2;
+  if (n <= 9) return 3;
+  if (n <= 16) return 4;
+  return 5;
+}
+const COLS = Number(process.env.COLS) || autoCols(shots.length);
+
+// Cell width shrinks a bit as columns increase so the grid fits GitHub's ~900px preview.
+const CELL_W = COLS <= 2 ? 560 : COLS === 3 ? 380 : COLS === 4 ? 280 : 220;
 
 const cell = (a) =>
   `<a href="${a.img}"><img src="${a.img}" alt="${a.name}" width="${CELL_W}"></a><br><sub><b>${a.name}</b> — <a href="${a.url}">${a.url}</a></sub>`;
@@ -58,4 +68,4 @@ Screenshots live in [\`shots/\`](shots/) at 1440×900, retina (2x).
 `;
 
 writeFileSync(join(root, "README.md"), md);
-console.log(`README.md written: ${shots.length} app(s), ${COLS} columns.`);
+console.log(`README.md written: ${shots.length} shot(s) → ${COLS} columns (auto: ${autoCols(shots.length)}, used: ${COLS}).`);
