@@ -1,5 +1,9 @@
 {
   "apps": [
-    { "name": "GreenPert", "url": "http://greenpert.6x7.gr", "dismiss": ["I am 21 or older"] }
+    { "name": "Greenpert Home",      "url": "http://greenpert.6x7.gr",            "dismiss": ["I am 21 or older"] },
+    { "name": "Greenpert Strains",   "url": "http://greenpert.6x7.gr/strains",    "dismiss": ["I am 21 or older"] },
+    { "name": "Greenpert Simulator", "url": "http://greenpert.6x7.gr/simulator",  "dismiss": ["I am 21 or older"] },
+    { "name": "Greenpert Learn",     "url": "http://greenpert.6x7.gr/learn",      "dismiss": ["I am 21 or older"] },
+    { "name": "Greenpert Spots",     "url": "http://greenpert.6x7.gr/spots",      "dismiss": ["I am 21 or older"] }
   ]
 }

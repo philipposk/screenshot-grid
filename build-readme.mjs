@@ -52,19 +52,21 @@ ${rows}</table>
 
 ## How this works (reusable tool)
 
-This repo screenshots a list of web apps and builds the grid above. No API keys, no cost.
+Screenshots multiple pages of a web app and builds the clickable grid above. No API keys, no cost — pure headless browser.
 
 \`\`\`bash
 npm install
 npx playwright install chromium   # one-time browser download
-npm run build                      # screenshot every app + rebuild this README
+npm run build                      # screenshot every page + rebuild this README
 \`\`\`
 
-- Add apps in [\`apps.json\`](apps.json): \`{ "name": "...", "url": "https://..." }\`
-- \`npm run shots\` — screenshot only (\`node capture.mjs greenpert\` for one app)
-- \`npm run grid\` — rebuild README from existing screenshots (\`COLS=4\` to change columns)
+- Edit [\`apps.json\`](apps.json) to list the pages you want: \`{ "name": "...", "url": "https://..." }\`
+- Add a \`"dismiss"\` array to click through age-gates or cookie banners before snapping
+- \`npm run shots\` — re-screenshot only
+- \`npm run grid\` — rebuild README from existing shots (\`COLS=4\` to force column count)
+- Grid columns auto-scale: 1–2 shots → match count, 3–4 → 2 cols, 5–9 → 3 cols, 10–16 → 4 cols, 17+ → 5 cols
 
-Screenshots live in [\`shots/\`](shots/) at 1440×900, retina (2x).
+Screenshots live in [\`shots/\`](shots/) at 1440×900, retina (2×).
 `;
 
 writeFileSync(join(root, "README.md"), md);
