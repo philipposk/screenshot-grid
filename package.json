@@ -1,0 +1,14 @@
+{
+  "name": "screenshot-grid",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Screenshot a list of web apps and build a clickable GitHub README grid. No API keys, no cost.",
+  "scripts": {
+    "shots": "node capture.mjs",
+    "grid": "node build-readme.mjs",
+    "build": "node capture.mjs && node build-readme.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "apps": [
+    { "name": "GreenPert", "url": "http://greenpert.6x7.gr", "dismiss": ["I am 21 or older"] }
+  ]
+}
