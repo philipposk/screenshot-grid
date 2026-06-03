@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Screenshot Grid — clickable web-app grids for your README</title>
+  <meta name="description" content="Screenshot any list of web pages and build a clickable grid for your GitHub README. No API keys, no cost. Pure Playwright headless browser." />
+  <meta property="og:title" content="Screenshot Grid" />
+  <meta property="og:description" content="Screenshot any list of web pages → clickable grid for your README. No API keys, no cost." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="shots/greenpert-home.png" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>" />
+  <style>
+    :root {
+      --bg: #0b0f0c;
+      --bg-2: #111813;
+      --card: #151d18;
+      --border: #233029;
+      --fg: #e7f0ea;
+      --muted: #93a39a;
+      --primary: #46d18a;
+      --primary-dim: #2fae6f;
+      --accent: #7cc6ff;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 600px at 70% -10%, #16241b 0%, var(--bg) 55%) no-repeat, var(--bg);
+      color: var(--fg);
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 18px; border-radius: 10px; font-weight: 700; font-size: 15px;
+      border: 1px solid var(--border); cursor: pointer; transition: .15s;
+    }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #04140a; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-dim); }
+    .btn-ghost { background: transparent; color: var(--fg); }
+    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Hero */
+    header.hero { padding: 80px 0 40px; text-align: center; }
+    .badge {
+      display: inline-block; font-size: 13px; font-weight: 600; color: var(--primary);
+      background: rgba(70,209,138,.1); border: 1px solid rgba(70,209,138,.3);
+      padding: 5px 12px; border-radius: 999px; margin-bottom: 22px;
+    }
+    h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.05; margin: 0 0 16px; letter-spacing: -.02em; }
+    h1 .grad { background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .lead { font-size: clamp(17px, 2.4vw, 21px); color: var(--muted); max-width: 640px; margin: 0 auto 30px; }
+    .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    section { padding: 46px 0; }
+    h2 { font-size: 28px; margin: 0 0 8px; letter-spacing: -.01em; }
+    .sub { color: var(--muted); margin: 0 0 26px; }
+
+    /* Demo grid — mirrors the tool's 3-col output */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid figure { margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .grid img { display: block; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; transition: .2s; }
+    .grid a:hover img { opacity: .85; }
+    .grid figcaption { padding: 9px 12px; font-size: 13px; color: var(--muted); }
+    .grid figcaption b { color: var(--fg); }
+    @media (max-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+    .caption-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 16px; }
+
+    /* Steps */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .step { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .step .n { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .step h3 { margin: 6px 0 6px; font-size: 17px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+    @media (max-width: 720px) { .steps { grid-template-columns: 1fr; } }
+
+    /* Code block */
+    pre {
+      background: #0a0e0b; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; overflow-x: auto; font-size: 14px; position: relative;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #cfe8da;
+    }
+    pre .c { color: var(--muted); }
+    .copy-btn {
+      position: absolute; top: 12px; right: 12px; font-size: 12px; padding: 5px 10px;
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 7px; cursor: pointer;
+    }
+    .copy-btn:hover { color: var(--primary); border-color: var(--primary); }
+
+    /* Columns table */
+    table.cols { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    table.cols th, table.cols td { padding: 11px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    table.cols th { color: var(--muted); font-weight: 600; }
+    table.cols tr:last-child td { border-bottom: 0; }
+    table.cols td:first-child { color: var(--fg); font-weight: 600; }
+
+    /* Cross-promo card */
+    .promo {
+      background: linear-gradient(135deg, rgba(124,198,255,.08), rgba(70,209,138,.08));
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 30px;
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: space-between;
+    }
+    .promo h2 { margin: 0 0 6px; }
+    .promo p { margin: 0; color: var(--muted); max-width: 520px; }
+
+    footer { border-top: 1px solid var(--border); padding: 34px 0 60px; color: var(--muted); font-size: 14px; }
+    footer .row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+    footer .links { display: flex; gap: 18px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">📸 No API keys · No cost · Open source</span>
+      <h1>Turn any web app into a<br /><span class="grad">clickable README grid</span></h1>
+      <p class="lead">
+        Point it at a list of pages, and it screenshots each one and builds a tidy, clickable
+        grid you can paste straight into your GitHub README — powered by a plain headless browser.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/philipposk/screenshot-grid">View on GitHub →</a>
+        <a class="btn btn-ghost" href="#demo">See it live</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="wrap">
+      <h2>A grid it built, live</h2>
+      <p class="sub">Five pages of one web app. Click any shot to open it full-size — exactly what the tool drops into your README.</p>
+      <div class="grid">
+        <figure><a href="shots/greenpert-home.png"><img src="shots/greenpert-home.png" alt="Greenpert home page" loading="lazy" /></a><figcaption><b>Home</b> — greenpert.6x7.gr</figcaption></figure>
+        <figure><a href="shots/greenpert-strains.png"><img src="shots/greenpert-strains.png" alt="Greenpert strains page" loading="lazy" /></a><figcaption><b>Strains</b> — /strains</figcaption></figure>
+        <figure><a href="shots/greenpert-simulator.png"><img src="shots/greenpert-simulator.png" alt="Greenpert simulator page" loading="lazy" /></a><figcaption><b>Simulator</b> — /simulator</figcaption></figure>
+        <figure><a href="shots/greenpert-learn.png"><img src="shots/greenpert-learn.png" alt="Greenpert learn page" loading="lazy" /></a><figcaption><b>Learn</b> — /learn</figcaption></figure>
+        <figure><a href="shots/greenpert-spots.png"><img src="shots/greenpert-spots.png" alt="Greenpert spots page" loading="lazy" /></a><figcaption><b>Spots</b> — /spots</figcaption></figure>
+      </div>
+      <p class="caption-note">This exact grid was generated by the tool, then pasted into a README — no editing by hand.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Three commands. That's the whole thing.</h2>
+      <p class="sub">No accounts, no cloud service, no API keys. Everything runs locally with a headless Chromium.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="n">STEP 1</div>
+          <h3>Install</h3>
+          <p>Grab the repo and let Playwright download a one-time Chromium browser.</p>
+        </div>
+        <div class="step">
+          <div class="n">STEP 2</div>
+          <h3>List your pages</h3>
+          <p>Edit <code>apps.json</code> with the pages you want. Add a <code>dismiss</code> list to click through age-gates or cookie banners first.</p>
+        </div>
+        <div class="step">
+          <div class="n">STEP 3</div>
+          <h3>Build</h3>
+          <p>One command screenshots every page and rewrites your README with the grid. Re-run any time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Quickstart</h2>
+      <p class="sub">Copy, paste, done.</p>
+      <pre id="code"><span class="c"># clone, then:</span>
+npm install
+npx playwright install chromium   <span class="c"># one-time browser download</span>
+npm run build                      <span class="c"># screenshot every page + rebuild README</span>
+
+<span class="c"># other handy commands</span>
+npm run shots   <span class="c"># re-screenshot only</span>
+npm run grid    <span class="c"># rebuild README from existing shots (COLS=4 to force columns)</span><button class="copy-btn" onclick="copyCode()">Copy</button></pre>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>The grid scales itself</h2>
+      <p class="sub">More screenshots, denser grid — the column count adapts automatically so it always fits GitHub's preview width.</p>
+      <table class="cols">
+        <tr><th>Screenshots</th><th>Columns</th></tr>
+        <tr><td>1–2</td><td>matches the count</td></tr>
+        <tr><td>3–4</td><td>2 columns</td></tr>
+        <tr><td>5–9</td><td>3 columns</td></tr>
+        <tr><td>10–16</td><td>4 columns</td></tr>
+        <tr><td>17+</td><td>5 columns</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="promo">
+        <div>
+          <h2>Take it further 🎬</h2>
+          <p>Built your grid? Turn it into a demo or promo video — and more — over at <b>demo.6x7.gr</b>.</p>
+        </div>
+        <a class="btn btn-primary" href="https://demo.6x7.gr">Open demo.6x7.gr →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap row">
+      <span>Open source · free to use · screenshot-grid</span>
+      <div class="links">
+        <a href="https://github.com/philipposk/screenshot-grid">GitHub repo</a>
+        <a href="http://greenpert.6x7.gr">Greenpert (example)</a>
+        <a href="https://demo.6x7.gr">demo.6x7.gr</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyCode() {
+      var lines = [
+        "npm install",
+        "npx playwright install chromium",
+        "npm run build"
+      ].join("\n");
+      navigator.clipboard.writeText(lines).then(function () {
+        var b = document.querySelector(".copy-btn");
+        var t = b.textContent; b.textContent = "Copied ✓";
+        setTimeout(function () { b.textContent = t; }, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
